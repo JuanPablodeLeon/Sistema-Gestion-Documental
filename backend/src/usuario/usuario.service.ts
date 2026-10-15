@@ -28,6 +28,9 @@ export class UsuarioService {
     return `This action returns a #${id} usuario`;
   }
 
+  findByUsername(username: string){
+    return this.usuarioModel.findOne({username});
+  }
   update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
     return `This action updates a #${id} usuario`;
   }
