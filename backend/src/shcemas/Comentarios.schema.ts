@@ -1,17 +1,17 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { Usuario } from "./Usuario.schema";
 
-@Schema()
+@Schema({
+    timestamps: true,
+})
 export class Comentario {
 
     @Prop({
-        type: [{
-            type: mongoose.Schema.Types.ObjectId, ref: 'Usuario'
-        }],
-        require: true
+        type: mongoose.Schema.Types.ObjectId, ref: 'Usuario',
+        required: true
     })
-    user:string;
+    user:Usuario | Types.ObjectId;
 
     @Prop({
         required: true
