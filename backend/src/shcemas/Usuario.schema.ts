@@ -29,7 +29,7 @@ export class Usuario {
     @Prop({
         required: true
     })
-    rol: string;
+    role: string;
 
     @Prop({
         required: true

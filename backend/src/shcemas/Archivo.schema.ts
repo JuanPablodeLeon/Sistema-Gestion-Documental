@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Types } from "mongoose";
 import { Usuario } from "./Usuario.schema";
-import { Comentario } from "./Comentarios.schema";
+import { Comentario } from "./Comentario.schema";
 import { Carpeta } from "./Carpeta.schema";
 //Pendiente agregar el cuando fue a papelera o restaurado
 @Schema({

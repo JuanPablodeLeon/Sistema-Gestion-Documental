@@ -1,9 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { UpdateComentarioDto } from './dto/update-comentario.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Comentario } from 'src/shcemas/Comentario.schema';
 
 @Injectable()
 export class ComentariosService {
+  constructor(
+      @InjectModel(Comentario.name) private readonly comentarioModel: Model<Comentario>
+    ){}
   create(createComentarioDto: CreateComentarioDto) {
     return 'This action adds a new comentario';
   }

@@ -21,7 +21,14 @@ export class AuthService {
 
         if(!pass) throw new UnauthorizedException('Credenciales Incorrectas');
 
-        return user;
+        const payload = { username: user.username };
+
+        const token = await this.jwtService.signAsync(payload);
+
+        return{
+            token: token,
+            userName: user.username,
+        };
         //return "login endpoint";
     }
 }
