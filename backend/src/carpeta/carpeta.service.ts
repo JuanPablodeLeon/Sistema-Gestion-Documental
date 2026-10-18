@@ -3,7 +3,7 @@ import { CreateCarpetaDto } from './dto/create-carpeta.dto';
 import { UpdateCarpetaDto } from './dto/update-carpeta.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Carpeta } from 'src/shcemas/Carpeta.schema';
+import { Carpeta } from 'src/schemas/Carpeta.schema';
 
 @Injectable()
 export class CarpetaService {

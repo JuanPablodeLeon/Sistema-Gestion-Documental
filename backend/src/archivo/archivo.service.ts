@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateArchivoDto } from './dto/create-archivo.dto';
 import { UpdateArchivoDto } from './dto/update-archivo.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Archivo } from 'src/shcemas/Archivo.schema';
+import { Archivo } from 'src/schemas/Archivo.schema';
 import { Model } from 'mongoose';
 
 @Injectable()

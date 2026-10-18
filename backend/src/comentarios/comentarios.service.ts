@@ -3,7 +3,7 @@ import { CreateComentarioDto } from './dto/create-comentario.dto';
 import { UpdateComentarioDto } from './dto/update-comentario.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Comentario } from 'src/shcemas/Comentario.schema';
+import { Comentario } from 'src/schemas/Comentario.schema';
 
 @Injectable()
 export class ComentariosService {

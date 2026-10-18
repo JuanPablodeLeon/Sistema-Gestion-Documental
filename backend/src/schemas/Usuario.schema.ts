@@ -22,17 +22,18 @@ export class Usuario {
     lastname: string;
 
     @Prop({
-        required: true
+        required: true,
     })
     password: string;
 
     @Prop({
         required: true
     })
-    role: string;
+    role: string; //agregar el rol con clase
 
     @Prop({
-        required: true
+        required: true,
+        default: true
     })
     status: boolean;
 }

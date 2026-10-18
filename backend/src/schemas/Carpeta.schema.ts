@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Types } from "mongoose";
 import { Usuario } from "./Usuario.schema";
+import { Comentario, ComentarioSchema } from "./Comentario.schema";
+import { PermisosDoc, PermisosDocSchema } from "./PermisosDoc.schema";
 
 @Schema({
     timestamps: true,
@@ -16,12 +18,18 @@ export class Carpeta {
         type: mongoose.Schema.Types.ObjectId, ref: 'Carpeta',
         default: null
     })
-    parentFolder: Carpeta|Types.ObjectId | null;
+    parentFolder: Carpeta | Types.ObjectId | null;
+
+    @Prop({ type: [{ 
+        type: mongoose.Schema.Types.ObjectId, ref: 'Carpeta' }], 
+        default: [] 
+    })
+    ancestors: (Carpeta | Types.ObjectId)[];
 
     @Prop({
         default: 0,
     })
-    size?: number; //tamaño del contenido de la carpeta <- Calculo con funciones de sumatoria nativa
+    size?: number; //tamaño del contenido de la carpeta <- Calculó con funciones de sumatoria nativa
 
     @Prop({
         type: mongoose.Schema.Types.ObjectId, ref: 'Usuario',
@@ -30,18 +38,16 @@ export class Carpeta {
     owner: Usuario | Types.ObjectId;
 
     @Prop({
-        type: [{
-            type: mongoose.Schema.Types.ObjectId, ref: 'Usuario'
-        }]
+        type: [PermisosDocSchema],
+        default: [],
     })
-    editors?: (Usuario | Types.ObjectId)[]; //pueden agregar archivos a la carpeta, pero no pueden eliminarla ni modificarla
+    shareWith?: PermisosDoc[];
 
     @Prop({
-        type: [{
-            type: mongoose.Schema.Types.ObjectId, ref: 'Usuario'
-        }]
+        type: [ComentarioSchema],
+        default: [],
     })
-    lectures?: (Usuario | Types.ObjectId)[]; // solo pueden ver el contenido de la carpeta, pero no pueden modificarla ni agregar archivos a ella
+    comentarios?: Comentario[]; //lista de comentarios en el archivo
 
     @Prop({
         required: true,
