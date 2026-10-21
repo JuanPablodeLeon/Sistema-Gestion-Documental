@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsString, MinLength } from "class-validator";
 
 export class CreateUsuarioDto {
         
@@ -17,13 +17,7 @@ export class CreateUsuarioDto {
 
     @IsNotEmpty()
     @IsString()
+    @MinLength(4)
     password: string;
 
-    @IsNotEmpty()
-    @IsString()
-    rol: string;
-
-    @IsNotEmpty()
-    @IsBoolean()
-    status: boolean;
     }

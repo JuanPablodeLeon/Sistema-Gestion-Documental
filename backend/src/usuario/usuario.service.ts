@@ -38,4 +38,9 @@ export class UsuarioService {
   remove(id: number) {
     return `This action removes a #${id} usuario`;
   }
+
+  //MOdificar para que devuelva el username, name, lastname, password, role, status
+  findByUsernameWithPassword(Username: string){
+    return this.usuarioModel.findOne({username: Username}).select('password');
+  }
 }
