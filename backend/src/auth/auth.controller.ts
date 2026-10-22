@@ -8,19 +8,17 @@ import type { UserActiveInterface } from 'src/common/interfaces/user-active.inte
 
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly authService: AuthService
-    ) { }
+  constructor(private readonly authService: AuthService) {}
 
-    @Post('login')
-    login(@Body() loginDto: LoginDto) {
-        return this.authService.login(loginDto);
-    }
+  @Post('login')
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
 
-    @Get('profile')
-    @Auth(Role.USER)
-    profile(@ActiveUser() user: UserActiveInterface) {
-       // console.log(user)
-        return this.authService.profile(user);
-    }
+  @Get('profile')
+  @Auth(Role.USER)
+  profile(@ActiveUser() user: UserActiveInterface) {
+    // console.log(user)
+    return this.authService.profile(user);
+  }
 }

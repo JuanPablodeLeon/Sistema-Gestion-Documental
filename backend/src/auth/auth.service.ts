@@ -1,38 +1,48 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsuarioService } from 'src/usuario/usuario.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
-
 @Injectable()
 export class AuthService {
-    constructor(
-        private readonly usuarioService: UsuarioService,
-        private readonly jwtService: JwtService
-    ) {}
+  constructor(
+    private readonly usuarioService: UsuarioService,
+    private readonly jwtService: JwtService,
+  ) {}
 
-    async login(loginDto: LoginDto){
-        const user = await this.usuarioService.findByUsernameWithPassword(loginDto.username);
+  async login(loginDto: LoginDto) {
+    const user = await this.usuarioService.findByUsernameWithPassword(
+      loginDto.username,
+    );
 
-        if(!user) throw new UnauthorizedException('Credenciales Incorrectas');
+    if (!user) throw new UnauthorizedException('Credenciales Incorrectas');
 
-        const pass = await bcryptjs.compare(loginDto.password, user.password);
+    if (!user.status)
+      throw new UnauthorizedException('El usuario se encuentra inactivo');
 
-        if(!pass) throw new UnauthorizedException('Credenciales Incorrectas');
+    const pass = await bcryptjs.compare(loginDto.password, user.password);
 
-        const payload = { username: user.username, role: user.role };
+    if (!pass) throw new UnauthorizedException('Credenciales Incorrectas');
 
-        const token = await this.jwtService.signAsync(payload);
+    const payload = {
+      sub: user._id.toString(),
+      username: user.username,
+      role: user.role,
+    };
 
-        return{
-            token: token,
-            userName: user.username,
-        };
-        //return "login endpoint";
-    }
+    const token = await this.jwtService.signAsync(payload);
 
-    async profile({username, role}: {username: string, role: string}){
-        return await this.usuarioService.findByUsername(username);
-    }
+    return {
+      token: token,
+      id: user._id,
+      userName: user.username,
+      role: user.role,
+    };
+    //return "login endpoint";
+  }
+
+  async profile({ username }: { username: string }) {
+    return await this.usuarioService.findByUsername(username);
+  }
 }

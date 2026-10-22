@@ -1,11 +1,15 @@
-import { Transform } from "class-transformer";
-import {IsString } from "class-validator";
+import { Transform } from 'class-transformer';
+import type { TransformFnParams } from 'class-transformer';
+import { IsString } from 'class-validator';
 
-export class LoginDto{
-    @IsString()
-    username: string;
+export class LoginDto {
+  @IsString()
+  username: string;
 
-    @Transform(({ value }) => value.trim())
-    @IsString()
-    password: string;
+  @Transform((params: TransformFnParams) => {
+    const value: unknown = params.value;
+    return typeof value === 'string' ? value.trim() : value;
+  })
+  @IsString()
+  password: string;
 }
