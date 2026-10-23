@@ -1,4 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateArchivoDto } from './create-archivo.dto';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class UpdateArchivoDto extends PartialType(CreateArchivoDto) {}
+export class UpdateArchivoDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
+}
