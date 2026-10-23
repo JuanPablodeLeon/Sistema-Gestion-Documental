@@ -29,6 +29,7 @@ export enum Accion {
 
   COMENTARIO_CREADO = 'comentario_creado',
   COMENTARIO_ELIMINADO = 'comentario_eliminado',
+  COMENTARIO_REPORTADO = 'comentario_reportado',
 }
 
 export enum TipoRecurso {

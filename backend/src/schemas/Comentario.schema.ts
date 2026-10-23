@@ -25,6 +25,19 @@ export class Comentario {
   })
   isReported: boolean;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario',
+    default: null,
+  })
+  reportedBy?: Usuario | Types.ObjectId | null;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  reportedAt?: Date | null;
+
   _id?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
