@@ -1,7 +1,14 @@
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { Role } from 'src/common/enums/rol.enum';
 
-export class UpdateUsuarioDto{
+export class UpdateUsuarioDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
@@ -25,5 +32,4 @@ export class UpdateUsuarioDto{
   @IsOptional()
   @IsBoolean()
   status?: boolean;
-
 }
