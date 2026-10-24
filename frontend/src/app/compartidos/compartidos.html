@@ -1,0 +1,141 @@
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-500">Colaboración</p>
+      <h1 class="mt-1 text-2xl font-extrabold tracking-tight">Compartidos conmigo</h1>
+      <p class="mt-1 text-sm text-base-content/60">
+        Carpetas y archivos que otros usuarios han compartido contigo.
+      </p>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" (click)="load()" [disabled]="loading()">
+      @if (loading()) {
+        <span class="loading loading-spinner loading-xs"></span>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5" />
+        </svg>
+      }
+      Actualizar
+    </button>
+  </div>
+
+  @if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="skeleton h-40 rounded-box"></div>
+      }
+    </div>
+  } @else if (total() === 0) {
+    <div class="card border border-dashed border-base-300 bg-base-100/60">
+      <div class="card-body items-center py-16 text-center">
+        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-fuchsia-500/10 text-fuchsia-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+          </svg>
+        </div>
+        <h3 class="mt-4 text-lg font-extrabold">Todavía no tienes recursos compartidos</h3>
+        <p class="max-w-md text-sm text-base-content/60">
+          Cuando alguien comparta una carpeta o un archivo contigo, aparecerá aquí con el nivel de permiso otorgado.
+        </p>
+      </div>
+    </div>
+  } @else {
+    @if (carpetas().length > 0) {
+      <section class="space-y-3">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+          </svg>
+          <h2 class="text-sm font-extrabold uppercase tracking-wide text-base-content/60">
+            Carpetas ({{ carpetas().length }})
+          </h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (carpeta of carpetas(); track carpeta._id) {
+            <a
+              class="card border border-base-300 bg-base-100 transition hover:-translate-y-0.5 hover:border-fuchsia-400/60 hover:shadow-lg"
+              [routerLink]="['/carpetas', carpeta._id]"
+            >
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-400/15 text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                    </svg>
+                  </div>
+                  <span class="badge badge-outline badge-sm">{{ nivel(carpeta) }}</span>
+                </div>
+                <div>
+                  <h3 class="truncate font-bold" [title]="carpeta.name">{{ carpeta.name }}</h3>
+                  <p class="mt-0.5 truncate text-xs text-base-content/55">
+                    De {{ ownerName(carpeta) }}
+                  </p>
+                </div>
+                <div class="mt-auto flex items-center justify-between text-[11px] text-base-content/45">
+                  <span>{{ size(carpeta.size) }}</span>
+                  <span>{{ date(carpeta.updatedAt) }}</span>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    @if (archivos().length > 0) {
+      <section class="space-y-3">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+          </svg>
+          <h2 class="text-sm font-extrabold uppercase tracking-wide text-base-content/60">
+            Archivos ({{ archivos().length }})
+          </h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (archivo of archivos(); track archivo._id) {
+            <a
+              class="card border border-base-300 bg-base-100 transition hover:-translate-y-0.5 hover:border-fuchsia-400/60 hover:shadow-lg"
+              [routerLink]="['/archivos', archivo._id]"
+            >
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start justify-between gap-3">
+                  <div
+                    class="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xs font-extrabold uppercase"
+                    [class.bg-sky-400/15]="archivo.type === 'txt'"
+                    [class.text-sky-500]="archivo.type === 'txt'"
+                    [class.bg-violet-400/15]="archivo.type === 'md'"
+                    [class.text-violet-500]="archivo.type === 'md'"
+                  >
+                    {{ archivo.type }}
+                  </div>
+                  <span class="badge badge-outline badge-sm">{{ nivel(archivo) }}</span>
+                </div>
+                <div>
+                  <h3 class="truncate font-bold" [title]="archivo.name">{{ archivo.name }}</h3>
+                  <p class="mt-0.5 truncate text-xs text-base-content/55">
+                    De {{ ownerName(archivo) }}
+                  </p>
+                </div>
+                <div class="mt-auto flex items-center justify-between text-[11px] text-base-content/45">
+                  <span>{{ size(archivo.size) }}</span>
+                  <span>{{ date(archivo.updatedAt) }}</span>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

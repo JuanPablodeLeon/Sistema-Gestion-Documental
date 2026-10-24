@@ -1,0 +1,607 @@
+<div>
+  <!-- Encabezado -->
+  <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div class="min-w-0">
+      <nav class="flex flex-wrap items-center gap-1 text-xs text-base-content/50" aria-label="Ruta de carpetas">
+        <a routerLink="/" class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-semibold transition hover:bg-base-200 hover:text-base-content">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5" />
+          </svg>
+          Inicio
+        </a>
+        @for (item of ruta(); track item._id) {
+          <span class="text-base-content/30">/</span>
+          <a
+            [routerLink]="['/carpetas', item._id]"
+            class="max-w-40 truncate rounded px-1.5 py-0.5 font-semibold transition hover:bg-base-200 hover:text-base-content"
+          >
+            {{ item.name }}
+          </a>
+        }
+        @if (folderId()) {
+          <span class="text-base-content/30">/</span>
+          <span class="max-w-48 truncate rounded bg-base-200 px-1.5 py-0.5 font-semibold text-base-content/70">
+            {{ currentName() }}
+          </span>
+        }
+      </nav>
+
+      <h1 class="mt-2 truncate text-3xl font-extrabold tracking-tight">
+        {{ currentName() }}
+      </h1>
+      <p class="mt-1 text-sm text-base-content/60">
+        {{ folders().length }} carpeta(s) · {{ files().length }} archivo(s)
+      </p>
+    </div>
+
+    @if (canEdit()) {
+      <div class="flex flex-wrap items-center gap-2">
+        @if (isCurrentOwner()) {
+          <button type="button" class="btn btn-sm btn-outline" (click)="shareCurrentFolder()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+            </svg>
+            Compartir
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" (click)="renameCurrentFolder()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+            Renombrar
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" (click)="moveCurrentFolder()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+              <path d="M9 13h6m-3-3v6" />
+            </svg>
+            Mover
+          </button>
+        }
+
+        <button type="button" class="btn btn-sm btn-outline" (click)="openCreateFolder()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+            <path d="M12 10v6M9 13h6" />
+          </svg>
+          Nueva carpeta
+        </button>
+
+        <button type="button" class="btn btn-sm btn-outline" (click)="openCreateFile()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+            <path d="M14 2v6h6M12 12v6M9 15h6" />
+          </svg>
+          Nuevo archivo
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-sm border-0 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-600/20 hover:from-pink-500 hover:to-fuchsia-500"
+          (click)="openUpload()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          </svg>
+          Subir archivo
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Estados -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-24 text-base-content/60">
+      <span class="loading loading-spinner loading-lg text-fuchsia-500"></span>
+      <p class="text-sm">Cargando documentos...</p>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-sm" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <!-- Carpetas en pila (stack) -->
+    @if (folders().length > 0) {
+      <section class="mb-10">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-base-content/50">
+            Carpetas
+          </h2>
+          <span class="badge badge-ghost badge-sm">{{ folders().length }}</span>
+        </div>
+
+        <div class="relative" [style.height.px]="folders().length * 62 + 8">
+          @for (folder of folders(); track folder._id; let i = $index) {
+            <div
+              class="absolute inset-x-0 transition-all duration-200 hover:-translate-y-0.5"
+              [style.top.px]="i * 62"
+              [style.zIndex]="folders().length - i"
+            >
+              <div
+                role="button"
+                tabindex="0"
+                class="card cursor-pointer border border-base-300 bg-base-100 shadow-sm transition hover:border-fuchsia-400/60 hover:shadow-md"
+                (click)="openFolder(folder._id)"
+                (keydown.enter)="openFolder(folder._id)"
+              >
+                <div class="flex items-center gap-3 px-4 py-3">
+                  <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-amber-500/10 text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                    </svg>
+                  </span>
+
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-bold">{{ folder.name }}</p>
+                    <p class="truncate text-xs text-base-content/50">
+                      {{ ownerName(folder) }}
+                    </p>
+                  </div>
+
+                  <div class="hidden items-center gap-4 text-right sm:flex">
+                    <div>
+                      <p class="text-[11px] uppercase tracking-wide text-base-content/40">Tamaño</p>
+                      <p class="text-xs font-semibold">{{ size(folder.size) }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[11px] uppercase tracking-wide text-base-content/40">Modificado</p>
+                      <p class="text-xs font-semibold">{{ date(folder.updatedAt) }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1">
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-circle btn-xs"
+                      title="Información"
+                      (click)="showFolderInfo(folder, $event)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 16v-4M12 8h.01" />
+                      </svg>
+                    </button>
+                    @if (isOwner(folder)) {
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-circle btn-xs"
+                        title="Compartir carpeta"
+                        (click)="openShare('carpeta', folder, $event)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="18" cy="5" r="3" />
+                          <circle cx="6" cy="12" r="3" />
+                          <circle cx="18" cy="19" r="3" />
+                          <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-circle btn-xs"
+                        title="Renombrar carpeta"
+                        (click)="openRename('carpeta', folder, $event)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-circle btn-xs"
+                        title="Mover carpeta"
+                        (click)="openMove('carpeta', folder, $event)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                          <path d="M9 13h6m-3-3v6" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-circle btn-xs text-error/70 hover:text-error"
+                        title="Enviar a papelera"
+                        (click)="enviarCarpetaPapelera(folder, $event)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
+                    }
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Archivos en tarjetas -->
+    <section>
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-base-content/50">
+          Archivos
+        </h2>
+        <span class="badge badge-ghost badge-sm">{{ files().length }}</span>
+      </div>
+
+      @if (files().length === 0) {
+        <div class="card border border-dashed border-base-300 bg-base-100">
+          <div class="card-body items-center py-14 text-center">
+            <span class="text-4xl">📄</span>
+            <h3 class="text-base font-bold">No hay archivos aquí</h3>
+            <p class="max-w-sm text-sm text-base-content/60">
+              Crea un archivo nuevo o sube un documento .txt / .md para comenzar.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (file of files(); track file._id) {
+            <article
+              role="button"
+              tabindex="0"
+              class="card cursor-pointer border border-base-300 bg-base-100 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-400/60 hover:shadow-md"
+              (click)="openFile(file._id)"
+              (keydown.enter)="openFile(file._id)"
+            >
+              <div class="card-body gap-3 p-4">
+                <div class="flex items-start gap-3">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-indigo-500/10 text-indigo-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                      <path d="M14 2v6h6M8 13h8M8 17h5" />
+                    </svg>
+                  </span>
+
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-bold" [title]="file.name">
+                      {{ file.name }}
+                    </p>
+                    <div class="mt-1 flex items-center gap-2">
+                      <span
+                        class="badge badge-sm"
+                        [class.badge-secondary]="ext(file) === 'md'"
+                        [class.badge-outline]="ext(file) === 'md'"
+                        [class.badge-ghost]="ext(file) !== 'md'"
+                      >
+                        .{{ ext(file) }}
+                      </span>
+                      <span class="text-[11px] text-base-content/50">{{ size(file.size) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 rounded-xl bg-base-200/60 px-3 py-2 text-[11px]">
+                  <span class="truncate text-base-content/60">{{ ownerName(file) }}</span>
+                  <span class="shrink-0 text-base-content/50">{{ date(file.updatedAt) }}</span>
+                </div>
+
+                <div class="mt-auto flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-circle btn-xs"
+                    title="Información"
+                    (click)="showFileInfo(file, $event)"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4M12 8h.01" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-circle btn-xs"
+                    title="Descargar"
+                    (click)="descargar(file, $event)"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                    </svg>
+                  </button>
+                  @if (isOwner(file)) {
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-circle btn-xs"
+                      title="Compartir archivo"
+                      (click)="openShare('archivo', file, $event)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-circle btn-xs"
+                      title="Renombrar archivo"
+                      (click)="openRename('archivo', file, $event)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-circle btn-xs"
+                      title="Mover archivo"
+                      (click)="openMove('archivo', file, $event)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                        <path d="M9 13h6m-3-3v6" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-ghost btn-circle btn-xs text-error/70 hover:text-error"
+                      title="Enviar a papelera"
+                      (click)="enviarArchivoPapelera(file, $event)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" />
+                      </svg>
+                    </button>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+
+  @if (folderId(); as id) {
+    <app-comentarios
+      tipo="carpeta"
+      [recursoId]="id"
+      [canComment]="canComment()"
+    />
+  }
+
+  @if (shareTarget(); as target) {
+    <app-share-modal
+      [tipo]="target.tipo"
+      [recursoId]="target.id"
+      [recursoNombre]="target.name"
+      (closed)="shareTarget.set(null)"
+    />
+  }
+
+  @if (renameTarget(); as target) {
+    <app-rename-modal
+      [tipo]="target.tipo"
+      [recursoId]="target.id"
+      [currentName]="target.name"
+      [tipoArchivo]="target.fileType ?? 'txt'"
+      (closed)="renameTarget.set(null)"
+      (renamed)="onRenamed()"
+    />
+  }
+
+  @if (moveTarget(); as target) {
+    <app-move-modal
+      [tipo]="target.tipo"
+      [recursoId]="target.id"
+      [recursoNombre]="target.name"
+      [excludedFolderId]="target.excludedFolderId ?? ''"
+      (closed)="moveTarget.set(null)"
+      (moved)="onMoved()"
+    />
+  }
+
+  <!-- Modal nueva carpeta -->
+  @if (createFolderOpen()) {
+    <div class="modal modal-open">
+      <div class="modal-box max-w-md">
+        <h3 class="text-lg font-extrabold">Nueva carpeta</h3>
+        <p class="text-sm text-base-content/60">
+          Se creará dentro de <span class="font-semibold">{{ currentName() }}</span>.
+        </p>
+
+        <form class="mt-5 flex flex-col gap-4" [formGroup]="folderForm" (ngSubmit)="submitFolder()">
+          <label class="flex flex-col">
+            <span class="mb-1.5 font-semibold">Nombre</span>
+            <input
+              type="text"
+              formControlName="name"
+              class="input w-full"
+              placeholder="Ej. Contratos 2026"
+              autofocus
+            />
+            @if (folderForm.controls.name.touched && folderForm.controls.name.invalid) {
+              <span class="mt-1 text-xs text-error">Ingresa un nombre válido</span>
+            }
+          </label>
+
+          @if (modalError()) {
+            <div role="alert" class="alert alert-error py-2 text-sm">
+              <span>{{ modalError() }}</span>
+            </div>
+          }
+
+          <div class="modal-action mt-2">
+            <button type="button" class="btn btn-ghost" (click)="closeCreateFolder()" [disabled]="saving()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) {
+                <span class="loading loading-spinner loading-sm"></span>
+              } @else {
+                Crear carpeta
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-backdrop bg-black/60" (click)="closeCreateFolder()"></div>
+    </div>
+  }
+
+  <!-- Modal nuevo archivo manual -->
+  @if (createFileOpen()) {
+    <div class="modal modal-open">
+      <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-extrabold">Nuevo archivo</h3>
+        <p class="text-sm text-base-content/60">
+          Se creará dentro de <span class="font-semibold">{{ currentName() }}</span>.
+        </p>
+
+        <form class="mt-5 flex flex-col gap-4" [formGroup]="fileForm" (ngSubmit)="submitFile()">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <label class="flex flex-col sm:col-span-2">
+              <span class="mb-1.5 font-semibold">Nombre</span>
+              <input type="text" formControlName="name" class="input w-full" placeholder="Ej. informe_anual" />
+              @if (fileForm.controls.name.touched && fileForm.controls.name.invalid) {
+                <span class="mt-1 text-xs text-error">Ingresa un nombre</span>
+              }
+            </label>
+
+            <label class="flex flex-col">
+              <span class="mb-1.5 font-semibold">Tipo</span>
+              <select formControlName="type" class="select w-full">
+                <option value="txt">.txt</option>
+                <option value="md">.md</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="flex flex-col">
+            <span class="mb-1.5 font-semibold">Contenido</span>
+            <textarea
+              formControlName="content"
+              rows="10"
+              class="textarea w-full font-mono text-sm"
+              placeholder="Escribe el contenido del documento..."
+            ></textarea>
+          </label>
+
+          @if (modalError()) {
+            <div role="alert" class="alert alert-error py-2 text-sm">
+              <span>{{ modalError() }}</span>
+            </div>
+          }
+
+          <div class="modal-action mt-2">
+            <button type="button" class="btn btn-ghost" (click)="closeCreateFile()" [disabled]="saving()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="saving()">
+              @if (saving()) {
+                <span class="loading loading-spinner loading-sm"></span>
+                Creando...
+              } @else {
+                Crear archivo
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-backdrop bg-black/60" (click)="closeCreateFile()"></div>
+    </div>
+  }
+
+  <!-- Modal subir archivo -->
+  @if (uploadOpen()) {
+    <div class="modal modal-open">
+      <div class="modal-box max-w-3xl">
+        <h3 class="text-lg font-extrabold">Subir archivo</h3>
+        <p class="text-sm text-base-content/60">
+          Formatos permitidos: <span class="font-semibold">.txt</span> y
+          <span class="font-semibold">.md</span>. Peso máximo: 16 MB.
+        </p>
+
+        <div class="mt-5 flex flex-col gap-4">
+          <label class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-base-300 bg-base-200/40 px-6 py-8 text-center transition hover:border-fuchsia-400/60">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+            </svg>
+            <span class="text-sm font-semibold">Selecciona un documento</span>
+            <span class="text-xs text-base-content/50">Haz clic para buscar en tu equipo</span>
+            <input
+              type="file"
+              class="hidden"
+              accept=".txt,.md,text/plain,text/markdown"
+              (change)="onFileSelected($event)"
+            />
+          </label>
+
+          @if (uploadName()) {
+            <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-base-300 bg-base-100 px-3 py-2">
+              <span class="flex min-w-0 items-center gap-2">
+                <span class="badge badge-secondary badge-outline badge-sm">.{{ uploadType() }}</span>
+                <span class="truncate font-mono text-xs font-semibold">{{ uploadName() }}</span>
+              </span>
+              <span class="text-xs text-base-content/50">{{ size(uploadSize()) }}</span>
+            </div>
+
+            <div>
+              <p class="mb-1.5 text-xs font-bold uppercase tracking-wide text-base-content/50">
+                Vista previa (solo lectura)
+              </p>
+              <pre class="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-base-300 bg-base-200/50 p-4 font-mono text-xs leading-relaxed">{{ uploadContent() }}</pre>
+            </div>
+          }
+
+          @if (uploadError()) {
+            <div role="alert" class="alert alert-error py-2 text-sm">
+              <span>{{ uploadError() }}</span>
+            </div>
+          }
+
+          @if (modalError()) {
+            <div role="alert" class="alert alert-error py-2 text-sm">
+              <span>{{ modalError() }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="modal-action mt-4">
+          <button type="button" class="btn btn-ghost" (click)="closeUpload()" [disabled]="saving()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn border-0 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white"
+            [disabled]="saving() || !uploadName()"
+            (click)="submitUpload()"
+          >
+            @if (saving()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              Cargando...
+            } @else {
+              Guardar archivo
+            }
+          </button>
+        </div>
+      </div>
+      <div class="modal-backdrop bg-black/60" (click)="closeUpload()"></div>
+    </div>
+  }
+
+  @if (infoItem(); as info) {
+    <app-info-modal [info]="info" (closed)="infoItem.set(null)" />
+  }
+
+  @if (toast(); as t) {
+    <div class="fixed bottom-6 right-6 z-50 fade-up">
+      <div
+        role="status"
+        class="alert shadow-xl"
+        [class.alert-success]="t.type === 'success'"
+        [class.alert-error]="t.type === 'error'"
+      >
+        <span class="text-sm font-semibold">{{ t.message }}</span>
+      </div>
+    </div>
+  }
+</div>

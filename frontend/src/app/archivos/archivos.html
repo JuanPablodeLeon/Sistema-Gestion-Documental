@@ -1,0 +1,237 @@
+<div>
+  <div class="mb-5 flex items-center gap-2">
+    <button type="button" class="btn btn-ghost btn-sm" (click)="back()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      Volver
+    </button>
+    <span class="text-xs text-base-content/40">/</span>
+    <a routerLink="/" class="text-xs font-semibold text-base-content/60 hover:text-base-content">
+      Documentos
+    </a>
+    @for (item of ruta(); track item._id) {
+      <span class="text-xs text-base-content/40">/</span>
+      <a
+        [routerLink]="['/carpetas', item._id]"
+        class="max-w-40 truncate text-xs font-semibold text-base-content/60 hover:text-base-content"
+        [title]="item.name"
+      >
+        {{ item.name }}
+      </a>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-24 text-base-content/60">
+      <span class="loading loading-spinner loading-lg text-fuchsia-500"></span>
+      <p class="text-sm">Cargando archivo...</p>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-sm" (click)="load()">Reintentar</button>
+    </div>
+  } @else if (archivo(); as file) {
+    <article class="card border border-base-300 bg-base-100 shadow-sm">
+      <div class="card-body gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div class="flex min-w-0 items-start gap-3">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-indigo-500/10 text-indigo-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                <path d="M14 2v6h6M8 13h8M8 17h5" />
+              </svg>
+            </span>
+
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <h1 class="truncate text-2xl font-extrabold tracking-tight" [title]="file.name">
+                  {{ file.name }}
+                </h1>
+                <span class="badge badge-secondary badge-outline badge-sm">
+                  .{{ file.type }}
+                </span>
+              </div>
+              <p class="mt-1 text-xs text-base-content/50">
+                {{ size(file.size) }} · Actualizado {{ date(file.updatedAt) }} ·
+                Propietario: {{ ownerName() }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            @if (canEdit()) {
+              <label class="flex cursor-pointer items-center gap-2 rounded-full border border-base-300 px-3 py-1.5" title="Alternar modo de visualización">
+                <span class="text-xs font-bold">
+                  {{ editing() ? 'Edición' : 'Lectura' }}
+                </span>
+                <input
+                  type="checkbox"
+                  class="toggle toggle-primary toggle-sm"
+                  [checked]="editing()"
+                  (change)="toggleEdit()"
+                />
+              </label>
+            } @else {
+              <span class="badge badge-ghost badge-sm">Solo lectura</span>
+            }
+
+            <button type="button" class="btn btn-ghost btn-circle btn-sm" title="Información" (click)="showInfo()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+            </button>
+
+            @if (isOwner()) {
+              <button type="button" class="btn btn-outline btn-sm" (click)="openShare()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+                </svg>
+                Compartir
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" (click)="openRename()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+                Renombrar
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" (click)="openMove()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                  <path d="M9 13h6m-3-3v6" />
+                </svg>
+                Mover
+              </button>
+            }
+
+            <button type="button" class="btn btn-outline btn-sm" (click)="descargar()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              Descargar
+            </button>
+          </div>
+        </div>
+
+        <div class="divider my-0"></div>
+
+        @if (editing()) {
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <p class="text-xs font-bold uppercase tracking-wide text-base-content/50">
+                Edición de contenido
+              </p>
+              @if (dirty()) {
+                <span class="badge badge-warning badge-sm">Cambios sin guardar</span>
+              } @else {
+                <span class="badge badge-ghost badge-sm">Sin cambios</span>
+              }
+            </div>
+
+            <textarea
+              class="textarea min-h-[26rem] w-full font-mono text-sm leading-relaxed"
+              [value]="draft()"
+              (input)="draft.set($any($event.target).value)"
+              spellcheck="false"
+            ></textarea>
+
+            <div class="flex flex-wrap justify-end gap-2">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEdit()" [disabled]="saving()">
+                Descartar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="save()"
+                [disabled]="saving() || !dirty()"
+              >
+                @if (saving()) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                  Guardando...
+                } @else {
+                  Guardar cambios
+                }
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div>
+            <div class="mb-2 flex items-center justify-between">
+              <p class="text-xs font-bold uppercase tracking-wide text-base-content/50">
+                Vista previa
+              </p>
+              <span class="badge badge-ghost badge-sm">Solo lectura</span>
+            </div>
+
+            @if (file.content) {
+              <pre class="max-h-[36rem] overflow-auto whitespace-pre-wrap break-words rounded-xl border border-base-300 bg-base-200/50 p-5 font-mono text-sm leading-relaxed">{{ file.content }}</pre>
+            } @else {
+              <div class="rounded-xl border border-dashed border-base-300 bg-base-200/30 px-6 py-14 text-center">
+                <span class="text-3xl">📄</span>
+                <p class="mt-2 text-sm text-base-content/60">Este archivo está vacío.</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </article>
+
+    <app-comentarios
+      tipo="archivo"
+      [recursoId]="file._id"
+      [canComment]="canComment()"
+    />
+  }
+
+  @if (shareTarget(); as target) {
+    <app-share-modal
+      tipo="archivo"
+      [recursoId]="target.id"
+      [recursoNombre]="target.name"
+      (closed)="shareTarget.set(null)"
+    />
+  }
+
+  @if (renameOpen() && archivo(); as archivoActual) {
+    <app-rename-modal
+      tipo="archivo"
+      [recursoId]="archivoActual._id"
+      [currentName]="archivoActual.name"
+      [tipoArchivo]="archivoActual.type"
+      (closed)="renameOpen.set(false)"
+      (renamed)="onRenamed()"
+    />
+  }
+
+  @if (moveOpen() && archivo(); as archivoActual) {
+    <app-move-modal
+      tipo="archivo"
+      [recursoId]="archivoActual._id"
+      [recursoNombre]="archivoActual.name"
+      (closed)="moveOpen.set(false)"
+      (moved)="onMoved()"
+    />
+  }
+
+  @if (infoItem(); as info) {
+    <app-info-modal [info]="info" (closed)="infoItem.set(null)" />
+  }
+
+  @if (toast(); as t) {
+    <div class="fixed bottom-6 right-6 z-50 fade-up">
+      <div
+        role="status"
+        class="alert shadow-xl"
+        [class.alert-success]="t.type === 'success'"
+        [class.alert-error]="t.type === 'error'"
+      >
+        <span class="text-sm font-semibold">{{ t.message }}</span>
+      </div>
+    </div>
+  }
+</div>

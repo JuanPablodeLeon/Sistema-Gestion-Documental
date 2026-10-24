@@ -1,0 +1,165 @@
+<section class="card mt-6 border border-base-300 bg-base-100 shadow-sm">
+  <div class="card-body gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-fuchsia-500/10 text-fuchsia-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </span>
+        <div>
+          <h2 class="text-base font-extrabold">Comentarios</h2>
+          <p class="text-xs text-base-content/50">
+            @if (visible() && loaded()) {
+              {{ items().length }} comentario(s)
+              @if (reportados() > 0) {
+                · {{ reportados() }} reportado(s)
+              }
+            } @else {
+              Elige si quieres ver los comentarios de este recurso.
+            }
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-outline btn-sm"
+        (click)="toggle()"
+      >
+        @if (visible()) {
+          Ocultar comentarios
+        } @else {
+          Mostrar comentarios
+        }
+      </button>
+    </div>
+
+    @if (visible()) {
+      <div class="divider my-0"></div>
+
+      @if (aviso()) {
+        <div role="status" class="alert alert-success py-2 text-sm">
+          <span>{{ aviso() }}</span>
+        </div>
+      }
+
+      @if (accionError()) {
+        <div role="alert" class="alert alert-error py-2 text-sm">
+          <span>{{ accionError() }}</span>
+        </div>
+      }
+
+      @if (canComment()) {
+        <div class="rounded-xl border border-base-300 bg-base-200/30 p-3">
+          <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-base-content/50">
+            Nuevo comentario
+          </label>
+          <textarea
+            class="textarea w-full"
+            rows="3"
+            maxlength="500"
+            placeholder="Escribe un comentario..."
+            [value]="texto()"
+            (input)="texto.set($any($event.target).value)"
+          ></textarea>
+          <div class="mt-2 flex items-center justify-between gap-2">
+            <span class="text-[11px] text-base-content/45">
+              {{ texto().length }}/500 · Los comentarios no se pueden editar ni eliminar.
+            </span>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              [disabled]="enviando() || texto().trim().length === 0"
+              (click)="crear()"
+            >
+              @if (enviando()) {
+                <span class="loading loading-spinner loading-xs"></span>
+                Publicando...
+              } @else {
+                Publicar comentario
+              }
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="rounded-xl border border-dashed border-base-300 px-4 py-3 text-center">
+          <p class="text-xs text-base-content/55">
+            Tienes acceso de lectura. Para comentar necesitas un permiso de comentario.
+          </p>
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="flex flex-col items-center justify-center gap-2 py-10 text-base-content/60">
+          <span class="loading loading-spinner loading-md text-fuchsia-500"></span>
+          <p class="text-sm">Cargando comentarios...</p>
+        </div>
+      } @else if (error()) {
+        <div role="alert" class="alert alert-error">
+          <span>{{ error() }}</span>
+          <button type="button" class="btn btn-sm" (click)="load()">Reintentar</button>
+        </div>
+      } @else if (items().length === 0) {
+        <div class="rounded-xl border border-dashed border-base-300 px-6 py-10 text-center">
+          <span class="text-3xl">💬</span>
+          <p class="mt-2 text-sm font-semibold">Sin comentarios</p>
+          <p class="text-xs text-base-content/50">
+            Sé el primero en comentar este recurso.
+          </p>
+        </div>
+      } @else {
+        <div class="flex flex-col gap-3">
+          @for (comentario of items(); track comentario._id) {
+            <article class="rounded-xl border border-base-300 bg-base-100 p-4">
+              <div class="flex items-start gap-3">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-[11px] font-bold text-white">
+                  {{ iniciales(comentario) }}
+                </span>
+
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-bold">{{ autor(comentario) }}</span>
+                    @if (username(comentario)) {
+                      <span class="font-mono text-[11px] text-base-content/45">
+                        &#64;{{ username(comentario) }}
+                      </span>
+                    }
+                    @if (esMio(comentario)) {
+                      <span class="badge badge-ghost badge-xs">Tú</span>
+                    }
+                    @if (comentario.isReported) {
+                      <span class="badge badge-error badge-outline badge-xs">Reportado</span>
+                    }
+                    <span class="ml-auto text-[11px] text-base-content/40">
+                      {{ fecha(comentario.createdAt) }}
+                    </span>
+                  </div>
+
+                  <p class="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                    {{ comentario.texto }}
+                  </p>
+
+                  @if (!comentario.isReported) {
+                    <div class="mt-2 flex justify-end">
+                      <button
+                        type="button"
+                        class="btn btn-ghost btn-xs text-warning/80 hover:text-warning"
+                        (click)="reportar(comentario)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7" />
+                        </svg>
+                        Reportar
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>

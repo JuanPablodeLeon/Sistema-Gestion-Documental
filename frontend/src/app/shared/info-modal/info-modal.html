@@ -1,0 +1,71 @@
+<div class="modal modal-open">
+  <div class="modal-box max-w-md">
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span
+          [class]="
+            info().kind === 'carpeta'
+              ? 'grid h-11 w-11 place-items-center rounded-xl text-xl bg-amber-500/10 text-amber-500'
+              : 'grid h-11 w-11 place-items-center rounded-xl text-xl bg-indigo-500/10 text-indigo-500'
+          "
+        >
+          {{ info().kind === 'carpeta' ? '📁' : '📄' }}
+        </span>
+        <div>
+          <h3 class="text-lg font-extrabold">Información</h3>
+          <p class="text-xs text-base-content/50">
+            {{ info().kind === 'carpeta' ? 'Carpeta' : 'Archivo' }}
+            @if (info().type) {
+              · .{{ info().type }}
+            }
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="btn btn-ghost btn-circle btn-sm"
+        (click)="closed.emit()"
+        aria-label="Cerrar"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="mt-5 rounded-xl border border-base-300 bg-base-200/50 p-4">
+      <p class="text-xs font-semibold uppercase tracking-wide text-base-content/50">
+        Nombre
+      </p>
+      <p class="mt-1 break-all font-mono text-sm font-semibold">
+        {{ info().name }}
+      </p>
+    </div>
+
+    <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+      <div class="rounded-xl border border-base-300 p-3">
+        <dt class="text-xs text-base-content/50">Creado</dt>
+        <dd class="mt-1 font-semibold">{{ formatDateTime(info().createdAt) }}</dd>
+      </div>
+      <div class="rounded-xl border border-base-300 p-3">
+        <dt class="text-xs text-base-content/50">Última modificación</dt>
+        <dd class="mt-1 font-semibold">{{ formatDateTime(info().updatedAt) }}</dd>
+      </div>
+      <div class="rounded-xl border border-base-300 p-3">
+        <dt class="text-xs text-base-content/50">Tamaño</dt>
+        <dd class="mt-1 font-semibold">{{ formatBytes(info().size) }}</dd>
+      </div>
+      <div class="rounded-xl border border-base-300 p-3">
+        <dt class="text-xs text-base-content/50">Propietario</dt>
+        <dd class="mt-1 truncate font-semibold">{{ info().owner ?? '—' }}</dd>
+      </div>
+    </dl>
+
+    <div class="modal-action">
+      <button type="button" class="btn btn-primary btn-sm" (click)="closed.emit()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+  <div class="modal-backdrop bg-black/60" (click)="closed.emit()"></div>
+</div>

@@ -1,0 +1,742 @@
+<div>
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-fuchsia-600 dark:text-fuchsia-400">
+        Análisis
+      </p>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-tight">
+        Reportes del sistema
+      </h1>
+      <p class="mt-1 max-w-2xl text-sm text-base-content/60">
+        Consultas de archivos, usuarios, compartición y actividad. Disponible para todos los usuarios autenticados.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      @if (auth.isAdmin()) {
+        <a routerLink="/reportes/comentarios" class="btn btn-outline btn-sm">
+          🚩 Comentarios reportados
+        </a>
+      }
+      <button type="button" class="btn btn-outline btn-sm" (click)="load()" [disabled]="loading()">
+        @if (loading()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5" />
+          </svg>
+        }
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-24 text-base-content/60">
+      <span class="loading loading-spinner loading-lg text-fuchsia-500"></span>
+      <p class="text-sm">Cargando reportes...</p>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-sm" (click)="load()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body flex-row items-center gap-4 p-4">
+          <span class="grid h-11 w-11 place-items-center rounded-xl bg-indigo-500/10 text-lg text-indigo-500">📄</span>
+          <div>
+            <p class="text-2xl font-extrabold leading-none">{{ totalArchivos() }}</p>
+            <p class="mt-1 text-xs text-base-content/60">Archivos almacenados</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body flex-row items-center gap-4 p-4">
+          <span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/10 text-lg text-emerald-500">🔗</span>
+          <div>
+            <p class="text-2xl font-extrabold leading-none">{{ totalComparticiones() }}</p>
+            <p class="mt-1 text-xs text-base-content/60">Comparticiones</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body flex-row items-center gap-4 p-4">
+          <span class="grid h-11 w-11 place-items-center rounded-xl bg-amber-500/10 text-lg text-amber-500">✨</span>
+          <div>
+            <p class="text-2xl font-extrabold leading-none">{{ totalActividades() }}</p>
+            <p class="mt-1 text-xs text-base-content/60">Operaciones registradas</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body flex-row items-center gap-4 p-4">
+          <span class="grid h-11 w-11 place-items-center rounded-xl bg-fuchsia-500/10 text-lg text-fuchsia-500">👥</span>
+          <div>
+            <p class="text-2xl font-extrabold leading-none">{{ usuarios().length }}</p>
+            <p class="mt-1 text-xs text-base-content/60">Usuarios registrados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div role="tablist" class="tabs tabs-box mb-5 w-full flex-nowrap overflow-x-auto bg-base-100 p-1">
+      <button
+        type="button"
+        role="tab"
+        class="tab flex-1 gap-2 whitespace-nowrap"
+        [class.tab-active]="tab() === 'archivos'"
+        (click)="cambiarTab('archivos')"
+      >
+        📄 Archivos
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab flex-1 gap-2 whitespace-nowrap"
+        [class.tab-active]="tab() === 'usuarios'"
+        (click)="cambiarTab('usuarios')"
+      >
+        👥 Usuarios
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab flex-1 gap-2 whitespace-nowrap"
+        [class.tab-active]="tab() === 'comparticion'"
+        (click)="cambiarTab('comparticion')"
+      >
+        🔗 Compartición
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab flex-1 gap-2 whitespace-nowrap"
+        [class.tab-active]="tab() === 'actividad'"
+        (click)="cambiarTab('actividad')"
+      >
+        ✨ Actividad
+      </button>
+    </div>
+
+    @if (tab() === 'archivos') {
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Cantidad de archivos por tipo</h2>
+            <p class="text-xs text-base-content/50">Agrupación de archivos activos según su extensión.</p>
+          </div>
+          <div class="collapse-content">
+            @if (porTipo().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin archivos registrados.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of porTipo(); track item.tipo) {
+                  <div>
+                    <div class="mb-1 flex items-center justify-between gap-3 text-sm">
+                      <span class="badge badge-secondary badge-outline">.{{ item.tipo }}</span>
+                      <span class="text-xs text-base-content/60">
+                        {{ item.cantidad }} archivos · {{ tamano(item.tamanioTotal) }}
+                      </span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-base-200">
+                      <div
+                        class="h-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500"
+                        [style.width.%]="ancho(item.cantidad, maxPorTipo())"
+                      ></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Archivos con más operaciones</h2>
+            <p class="text-xs text-base-content/50">Recursos con mayor cantidad de eventos registrados.</p>
+          </div>
+          <div class="collapse-content">
+            @if (archivosOperaciones().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin operaciones registradas.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of archivosOperaciones(); track item.archivoId; let i = $index) {
+                  <div class="flex items-center gap-3">
+                    <span class="w-5 text-right text-xs font-bold text-base-content/40">{{ i + 1 }}</span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <a
+                          [routerLink]="['/archivos', item.archivoId]"
+                          class="truncate text-sm font-semibold hover:text-fuchsia-600"
+                        >
+                          {{ item.nombre || 'Archivo eliminado' }}
+                        </a>
+                        <span class="badge badge-ghost badge-sm">{{ item.operaciones }}</span>
+                      </div>
+                      <p class="text-[11px] text-base-content/45">
+                        {{ tipo(item.tipo) }} · Propietario: {{ item.propietario || '—' }}
+                      </p>
+                      <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-base-200">
+                        <div
+                          class="h-full rounded-full bg-amber-500"
+                          [style.width.%]="ancho(item.operaciones, maxOperaciones())"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm lg:col-span-2">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Archivos almacenados en un rango de fechas</h2>
+            <p class="text-xs text-base-content/50">Filtra por la fecha de creación del archivo.</p>
+          </div>
+          <div class="collapse-content">
+            <div class="flex flex-wrap items-end gap-2">
+              <label class="form-control">
+                <span class="label-text mb-1 text-xs">Desde</span>
+                <input
+                  type="date"
+                  class="input input-bordered input-sm"
+                  [value]="desdeArchivos()"
+                  (input)="desdeArchivos.set($any($event.target).value)"
+                />
+              </label>
+              <label class="form-control">
+                <span class="label-text mb-1 text-xs">Hasta</span>
+                <input
+                  type="date"
+                  class="input input-bordered input-sm"
+                  [value]="hastaArchivos()"
+                  (input)="hastaArchivos.set($any($event.target).value)"
+                />
+              </label>
+              <button
+                type="button"
+                class="btn btn-sm border-0 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white"
+                (click)="aplicarRangoArchivos()"
+                [disabled]="cargandoRangoArchivos()"
+              >
+                @if (cargandoRangoArchivos()) {
+                  <span class="loading loading-spinner loading-xs"></span>
+                }
+                Consultar
+              </button>
+            </div>
+
+            @if (errorRangoArchivos()) {
+              <div role="alert" class="alert alert-error alert-sm mt-3">
+                <span>{{ errorRangoArchivos() }}</span>
+              </div>
+            } @else if (cargandoRangoArchivos()) {
+              <div class="flex justify-center py-10">
+                <span class="loading loading-spinner text-fuchsia-500"></span>
+              </div>
+            } @else if (rangoArchivos(); as rango) {
+              <div class="mt-3 flex items-center justify-between text-xs text-base-content/50">
+                <span>{{ rango.total }} archivo(s) encontrado(s)</span>
+                @if (rango.total > rango.items.length) {
+                  <span>Mostrando los primeros {{ rango.items.length }}</span>
+                }
+              </div>
+
+              @if (rango.items.length === 0) {
+                <p class="py-10 text-center text-sm text-base-content/50">No hay archivos en ese rango de fechas.</p>
+              } @else {
+                <div class="mt-2 overflow-x-auto">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Archivo</th>
+                        <th>Tipo</th>
+                        <th>Propietario</th>
+                        <th>Tamaño</th>
+                        <th>Creado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (archivo of rango.items; track archivo._id) {
+                        <tr class="hover">
+                          <td>
+                            <a
+                              [routerLink]="['/archivos', archivo._id]"
+                              class="font-semibold hover:text-fuchsia-600"
+                            >
+                              {{ archivo.name }}
+                            </a>
+                          </td>
+                          <td>
+                            <span class="badge badge-secondary badge-outline badge-sm">.{{ archivo.type }}</span>
+                          </td>
+                          <td class="text-xs">{{ propietario(archivo.owner) }}</td>
+                          <td class="text-xs">{{ tamano(archivo.size) }}</td>
+                          <td class="text-xs">{{ fechaHora(archivo.createdAt) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (tab() === 'usuarios') {
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Top 10 usuarios con más archivos</h2>
+            <p class="text-xs text-base-content/50">Usuarios ordenados por cantidad de archivos activos.</p>
+          </div>
+          <div class="collapse-content">
+            @if (topUsuarios().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin datos de usuarios.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of topUsuarios(); track item.usuarioId; let i = $index) {
+                  <div class="flex items-center gap-3">
+                    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-base-200 text-xs font-bold">
+                      {{ i + 1 }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                          <p class="truncate text-sm font-semibold">{{ item.nombre || item.username }}</p>
+                          <p class="text-[11px] text-base-content/45">&#64;{{ item.username }}</p>
+                        </div>
+                        <span class="badge badge-primary badge-sm">{{ item.archivos }}</span>
+                      </div>
+                      <div class="mt-1 flex items-center gap-2">
+                        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-base-200">
+                          <div
+                            class="h-full rounded-full bg-indigo-500"
+                            [style.width.%]="ancho(item.archivos, maxTopArchivos())"
+                          ></div>
+                        </div>
+                        <span class="text-[11px] text-base-content/45">{{ tamano(item.tamanioTotal) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Usuarios con más recursos compartidos</h2>
+            <p class="text-xs text-base-content/50">Propietarios con mayor cantidad de comparticiones otorgadas.</p>
+          </div>
+          <div class="collapse-content">
+            @if (usuariosCompartidos().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Aún no hay recursos compartidos.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of usuariosCompartidos(); track item.usuarioId; let i = $index) {
+                  <div class="flex items-center gap-3">
+                    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-base-200 text-xs font-bold">
+                      {{ i + 1 }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                          <p class="truncate text-sm font-semibold">{{ item.nombre || item.username }}</p>
+                          <p class="text-[11px] text-base-content/45">&#64;{{ item.username }}</p>
+                        </div>
+                        <span class="badge badge-success badge-sm">{{ item.comparticiones }}</span>
+                      </div>
+                      <div class="mt-1 flex items-center gap-2">
+                        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-base-200">
+                          <div
+                            class="h-full rounded-full bg-emerald-500"
+                            [style.width.%]="ancho(item.comparticiones, maxCompartidos())"
+                          ></div>
+                        </div>
+                        <span class="text-[11px] text-base-content/45">{{ item.recursos }} recurso(s)</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (tab() === 'comparticion') {
+      <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-base font-extrabold">Reportes de compartición</h2>
+          <p class="text-xs text-base-content/50">Consulta recursos enviados y recibidos por un usuario.</p>
+        </div>
+        <label class="form-control sm:w-72">
+          <span class="label-text mb-1 text-xs">Usuario</span>
+          <select
+            class="select select-bordered select-sm"
+            [value]="usuarioSeleccionado()"
+            (change)="cambiarUsuario($any($event.target).value)"
+          >
+            @for (usuario of usuarios(); track usuario._id) {
+              <option [value]="usuario._id">
+                {{ nombreUsuario(usuario) }} (&#64;{{ usuario.username }})
+              </option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Recursos compartidos por el usuario</h2>
+            <p class="text-xs text-base-content/50">Recursos propios que tienen al menos un usuario invitado.</p>
+          </div>
+          <div class="collapse-content">
+            @if (cargandoUsuario()) {
+              <div class="flex justify-center py-10">
+                <span class="loading loading-spinner text-fuchsia-500"></span>
+              </div>
+            } @else if (errorUsuario()) {
+              <div role="alert" class="alert alert-error alert-sm mt-3"><span>{{ errorUsuario() }}</span></div>
+            } @else if (compartidosPorUsuario().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Este usuario no ha compartido recursos.</p>
+            } @else {
+              <div class="mt-2 flex flex-col divide-y divide-base-200">
+                @for (item of compartidosPorUsuario(); track item.recursoId) {
+                  <div class="flex items-center gap-3 py-2.5">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-base-200">
+                      {{ item.tipo === 'archivo' ? '📄' : '📁' }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <a
+                        [routerLink]="rutaRecurso(item.tipo, item.recursoId)"
+                        class="block truncate text-sm font-semibold hover:text-fuchsia-600"
+                      >
+                        {{ item.nombre }}
+                      </a>
+                      <p class="text-[11px] text-base-content/45">Creado el {{ fecha(item.creado) }}</p>
+                    </div>
+                    <span class="badge badge-ghost badge-sm">{{ item.compartidoCon }} usuario(s)</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Recursos recibidos por el usuario</h2>
+            <p class="text-xs text-base-content/50">Recursos de otros propietarios con acceso para este usuario.</p>
+          </div>
+          <div class="collapse-content">
+            @if (cargandoUsuario()) {
+              <div class="flex justify-center py-10">
+                <span class="loading loading-spinner text-fuchsia-500"></span>
+              </div>
+            } @else if (errorUsuario()) {
+              <div role="alert" class="alert alert-error alert-sm mt-3"><span>{{ errorUsuario() }}</span></div>
+            } @else if (recibidosPorUsuario().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Este usuario no ha recibido recursos compartidos.</p>
+            } @else {
+              <div class="mt-2 flex flex-col divide-y divide-base-200">
+                @for (item of recibidosPorUsuario(); track item.recursoId) {
+                  <div class="flex items-center gap-3 py-2.5">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-base-200">
+                      {{ item.tipo === 'archivo' ? '📄' : '📁' }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <a
+                        [routerLink]="rutaRecurso(item.tipo, item.recursoId)"
+                        class="block truncate text-sm font-semibold hover:text-fuchsia-600"
+                      >
+                        {{ item.nombre }}
+                      </a>
+                      <p class="text-[11px] text-base-content/45">
+                        De {{ propietario(item.propietario) }} · {{ fecha(item.creado) }}
+                      </p>
+                    </div>
+                    <span class="badge badge-outline badge-sm">{{ permisos(item.permisos) }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm lg:col-span-2">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Archivos compartidos con más usuarios</h2>
+            <p class="text-xs text-base-content/50">Archivos con mayor cantidad de destinatarios.</p>
+          </div>
+          <div class="collapse-content">
+            @if (archivosCompartidos().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Aún no hay archivos compartidos.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of archivosCompartidos(); track item.archivoId; let i = $index) {
+                  <div class="flex items-center gap-3">
+                    <span class="w-5 text-right text-xs font-bold text-base-content/40">{{ i + 1 }}</span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <a
+                          [routerLink]="['/archivos', item.archivoId]"
+                          class="truncate text-sm font-semibold hover:text-fuchsia-600"
+                        >
+                          {{ item.nombre }}
+                        </a>
+                        <span class="badge badge-success badge-sm">{{ item.cantidadUsuarios }} usuario(s)</span>
+                      </div>
+                      <p class="text-[11px] text-base-content/45">
+                        {{ tipo(item.tipo) }} · Propietario: {{ item.propietario || '—' }}
+                      </p>
+                      <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-base-200">
+                        <div
+                          class="h-full rounded-full bg-emerald-500"
+                          [style.width.%]="ancho(item.cantidadUsuarios, maxArchivoCompartido())"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (tab() === 'actividad') {
+      <div class="mb-4 flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h2 class="text-base font-extrabold">Reportes de actividad</h2>
+          <p class="text-xs text-base-content/50">Historial y acumulados de operaciones dentro del sistema.</p>
+        </div>
+
+        <div class="flex flex-wrap items-end gap-2">
+          <label class="form-control">
+            <span class="label-text mb-1 text-xs">Usuario</span>
+            <select
+              class="select select-bordered select-sm sm:w-56"
+              [value]="usuarioSeleccionado()"
+              (change)="cambiarUsuario($any($event.target).value)"
+            >
+              @for (usuario of usuarios(); track usuario._id) {
+                <option [value]="usuario._id">
+                  {{ nombreUsuario(usuario) }} (&#64;{{ usuario.username }})
+                </option>
+              }
+            </select>
+          </label>
+          <label class="form-control">
+            <span class="label-text mb-1 text-xs">Desde</span>
+            <input
+              type="date"
+              class="input input-bordered input-sm"
+              [value]="desdeActividad()"
+              (input)="desdeActividad.set($any($event.target).value)"
+            />
+          </label>
+          <label class="form-control">
+            <span class="label-text mb-1 text-xs">Hasta</span>
+            <input
+              type="date"
+              class="input input-bordered input-sm"
+              [value]="hastaActividad()"
+              (input)="hastaActividad.set($any($event.target).value)"
+            />
+          </label>
+          <button
+            type="button"
+            class="btn btn-sm border-0 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white"
+            (click)="aplicarRangoActividad()"
+          >
+            Aplicar
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Cantidad de operaciones por tipo</h2>
+            <p class="text-xs text-base-content/50">Distribución global de acciones registradas.</p>
+          </div>
+          <div class="collapse-content">
+            @if (actividadTipo().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin operaciones registradas.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of actividadTipo(); track item.accion) {
+                  <div>
+                    <div class="mb-1 flex items-center justify-between gap-2 text-sm">
+                      <span class="truncate">{{ accion(item.accion) }}</span>
+                      <span class="badge badge-ghost badge-sm">{{ item.cantidad }}</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-base-200">
+                      <div
+                        class="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                        [style.width.%]="ancho(item.cantidad, maxActividadTipo())"
+                      ></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Operaciones agrupadas por período</h2>
+            <p class="text-xs text-base-content/50">Acumulado según la unidad seleccionada.</p>
+          </div>
+          <div class="collapse-content">
+            <div class="mb-2 flex justify-end">
+              <select
+                class="select select-bordered select-xs"
+                [value]="unidadPeriodo()"
+                (change)="cambiarUnidadPeriodo($any($event.target).value)"
+              >
+                <option value="dia">Por día</option>
+                <option value="mes">Por mes</option>
+                <option value="anio">Por año</option>
+              </select>
+            </div>
+
+            @if (errorPeriodo()) {
+              <div role="alert" class="alert alert-error alert-sm mt-3"><span>{{ errorPeriodo() }}</span></div>
+            } @else if (cargandoPeriodo()) {
+              <div class="flex justify-center py-10">
+                <span class="loading loading-spinner text-fuchsia-500"></span>
+              </div>
+            } @else if (actividadPeriodo().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin operaciones en el rango seleccionado.</p>
+            } @else {
+              <div class="mt-2 flex flex-col gap-3">
+                @for (item of actividadPeriodo(); track item.periodo) {
+                  <div>
+                    <div class="mb-1 flex items-center justify-between gap-2 text-sm">
+                      <span class="font-mono text-xs">{{ item.periodo }}</span>
+                      <span class="badge badge-ghost badge-sm">{{ item.cantidad }}</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-base-200">
+                      <div
+                        class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-blue-500"
+                        [style.width.%]="ancho(item.cantidad, maxActividadPeriodo())"
+                      ></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm lg:col-span-2">
+          <input type="checkbox" />
+          <div class="collapse-title">
+            <h2 class="text-base font-extrabold">Principales acciones realizadas</h2>
+            <p class="text-xs text-base-content/50">Las acciones más frecuentes dentro del sistema.</p>
+          </div>
+          <div class="collapse-content">
+            @if (principales().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Sin operaciones registradas.</p>
+            } @else {
+              <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                @for (item of principales(); track item.accion; let i = $index) {
+                  <div class="flex items-center gap-3 rounded-xl border border-base-200 p-3">
+                    <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-base-200 text-xs font-bold">
+                      {{ i + 1 }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="truncate text-sm font-semibold">{{ accion(item.accion) }}</span>
+                        <span class="badge badge-primary badge-sm">{{ item.cantidad }}</span>
+                      </div>
+                      <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-base-200">
+                        <div
+                          class="h-full rounded-full bg-fuchsia-500"
+                          [style.width.%]="ancho(item.cantidad, maxPrincipales())"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        @if (auth.isAdmin()) {
+          <section class="collapse collapse-arrow border border-base-300 bg-base-100 shadow-sm lg:col-span-2">
+            <input type="checkbox" />
+            <div class="collapse-title">
+              <h2 class="text-base font-extrabold">Historial de actividad del usuario</h2>
+              <p class="text-xs text-base-content/50">Operaciones dentro del rango de fechas seleccionado.</p>
+            </div>
+            <div class="collapse-content">
+            @if (cargandoHistorial()) {
+              <div class="flex justify-center py-10">
+                <span class="loading loading-spinner text-fuchsia-500"></span>
+              </div>
+            } @else if (errorHistorial()) {
+              <div role="alert" class="alert alert-error alert-sm mt-3"><span>{{ errorHistorial() }}</span></div>
+            } @else if (historial().length === 0) {
+              <p class="py-10 text-center text-sm text-base-content/50">Este usuario no tiene actividad en el rango seleccionado.</p>
+            } @else {
+              <div class="mt-2 max-h-[28rem] overflow-y-auto">
+                <div class="flex flex-col divide-y divide-base-200">
+                  @for (item of historial(); track item._id) {
+                    <div class="flex gap-3 py-2.5">
+                      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-base-200 text-sm">
+                        {{ iconoActividad(item) }}
+                      </span>
+                      <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold leading-snug">
+                          <span class="text-fuchsia-600 dark:text-fuchsia-400">{{ propietario(item.user) }}</span>
+                          <span class="text-base-content/40"> · </span>
+                          {{ accion(item.action) }}
+                        </p>
+                        <p class="truncate font-mono text-[11px] text-base-content/60">
+                          {{ item.resourceName }}
+                          <span class="text-base-content/35">({{ recurso(item.resourceType) }})</span>
+                        </p>
+                      </div>
+                      <span class="shrink-0 text-[11px] text-base-content/40">{{ fechaHora(item.createdAt) }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  }
+</div>

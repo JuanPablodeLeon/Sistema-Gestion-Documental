@@ -1,0 +1,212 @@
+<div class="space-y-6">
+  <div>
+    <p class="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-500">Explorar</p>
+    <h1 class="mt-1 text-2xl font-extrabold tracking-tight">Buscar y filtrar</h1>
+    <p class="mt-1 text-sm text-base-content/60">
+      Encuentra archivos por nombre o contenido, tipo, fecha y orden.
+    </p>
+  </div>
+
+  <form
+    class="card border border-base-300 bg-base-100"
+    (submit)="submit($event)"
+  >
+    <div class="card-body gap-4 p-5">
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <label class="input input-bordered flex flex-1 items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="search"
+            class="grow"
+            placeholder="Buscar por nombre o contenido..."
+            [value]="q()"
+            (input)="q.set($any($event.target).value)"
+          />
+        </label>
+        <button type="submit" class="btn btn-primary" [disabled]="loading()">
+          @if (loading()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          }
+          Buscar
+        </button>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="form-control">
+          <span class="mb-1.5 text-xs font-bold uppercase tracking-wide text-base-content/50">Tipo</span>
+          <select
+            class="select select-bordered w-full"
+            [value]="tipo()"
+            (change)="tipo.set($any($event.target).value)"
+          >
+            <option value="">Todos los tipos</option>
+            <option value="txt">Texto (.txt)</option>
+            <option value="md">Markdown (.md)</option>
+          </select>
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-xs font-bold uppercase tracking-wide text-base-content/50">Ordenar por</span>
+          <select
+            class="select select-bordered w-full"
+            [value]="orden()"
+            (change)="orden.set($any($event.target).value)"
+          >
+            <option value="reciente">Más recientes</option>
+            <option value="nombre">Nombre (A-Z)</option>
+            <option value="tamanio">Tamaño (mayor primero)</option>
+          </select>
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-xs font-bold uppercase tracking-wide text-base-content/50">Creado desde</span>
+          <input
+            type="date"
+            class="input input-bordered w-full"
+            [value]="desde()"
+            (input)="desde.set($any($event.target).value)"
+          />
+        </label>
+
+        <label class="form-control">
+          <span class="mb-1.5 text-xs font-bold uppercase tracking-wide text-base-content/50">Creado hasta</span>
+          <input
+            type="date"
+            class="input input-bordered w-full"
+            [value]="hasta()"
+            (input)="hasta.set($any($event.target).value)"
+          />
+        </label>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="text-xs text-base-content/50">
+          La búsqueda de texto revisa el nombre y el contenido de los archivos.
+        </p>
+        @if (hayFiltros()) {
+          <button type="button" class="btn btn-ghost btn-xs" (click)="limpiar()">
+            Limpiar filtros
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+
+  @if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="skeleton h-36 rounded-box"></div>
+      }
+    </div>
+  } @else {
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <p class="text-sm text-base-content/60">
+        {{ total() }} {{ total() === 1 ? 'resultado' : 'resultados' }}
+      </p>
+      @if (total() > 0) {
+        <p class="text-xs text-base-content/45">
+          Página {{ page() }} de {{ totalPaginas() }}
+        </p>
+      }
+    </div>
+
+    @if (resultados().length === 0) {
+      <div class="card border border-dashed border-base-300 bg-base-100/60">
+        <div class="card-body items-center py-14 text-center">
+          <div class="grid h-14 w-14 place-items-center rounded-2xl bg-base-200 text-base-content/40">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+          </div>
+          <h3 class="mt-4 text-lg font-extrabold">Sin resultados</h3>
+          <p class="max-w-md text-sm text-base-content/60">
+            Prueba con otro término o ajusta los filtros de tipo y fecha.
+          </p>
+        </div>
+      </div>
+    } @else {
+      <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        @for (archivo of resultados(); track archivo._id) {
+          <a
+            class="card border border-base-300 bg-base-100 transition hover:-translate-y-0.5 hover:border-fuchsia-400/60 hover:shadow-lg"
+            [routerLink]="['/archivos', archivo._id]"
+          >
+            <div class="card-body gap-3 p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div
+                  class="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-xs font-extrabold uppercase"
+                  [class.bg-sky-400/15]="archivo.type === 'txt'"
+                  [class.text-sky-500]="archivo.type === 'txt'"
+                  [class.bg-violet-400/15]="archivo.type === 'md'"
+                  [class.text-violet-500]="archivo.type === 'md'"
+                >
+                  {{ archivo.type }}
+                </div>
+                <span class="badge badge-ghost badge-sm">.{{ archivo.type }}</span>
+              </div>
+
+              <div>
+                <h3 class="truncate font-bold" [title]="archivo.name">{{ archivo.name }}</h3>
+                <p class="mt-0.5 truncate text-xs text-base-content/55">
+                  De {{ ownerName(archivo) }}
+                </p>
+              </div>
+
+              <div class="mt-auto flex items-center justify-between text-[11px] text-base-content/45">
+                <span>{{ size(archivo.size) }}</span>
+                <span>{{ date(archivo.createdAt) }}</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+
+      @if (totalPaginas() > 1) {
+        <div class="flex flex-wrap items-center justify-center gap-1">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="page() === 1"
+            (click)="irAPagina(page() - 1)"
+          >
+            Anterior
+          </button>
+          @for (pagina of paginas(); track pagina) {
+            <button
+              type="button"
+              class="btn btn-sm"
+              [class.btn-primary]="pagina === page()"
+              [class.btn-ghost]="pagina !== page()"
+              (click)="irAPagina(pagina)"
+            >
+              {{ pagina }}
+            </button>
+          }
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            [disabled]="page() === totalPaginas()"
+            (click)="irAPagina(page() + 1)"
+          >
+            Siguiente
+          </button>
+        </div>
+      }
+    }
+  }
+</div>

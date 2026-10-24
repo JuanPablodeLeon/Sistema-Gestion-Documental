@@ -1,0 +1,170 @@
+<div class="grid min-h-screen bg-base-100 lg:grid-cols-2">
+  <!-- Branding -->
+  <aside
+    class="relative hidden overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-fuchsia-900 p-12 text-white lg:flex lg:flex-col lg:justify-between"
+  >
+    <div
+      class="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-fuchsia-500/25 blur-3xl"
+    ></div>
+    <div
+      class="pointer-events-none absolute -bottom-40 -right-24 h-[28rem] w-[28rem] rounded-full bg-indigo-500/30 blur-3xl"
+    ></div>
+    <div
+      class="pointer-events-none absolute left-1/3 top-1/2 h-72 w-72 rounded-full bg-pink-500/20 blur-3xl"
+    ></div>
+
+    <div class="relative z-10 flex items-center gap-3">
+      <span
+        class="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-2xl ring-1 ring-white/20 backdrop-blur"
+        >⬡</span
+      >
+      <span class="text-lg font-bold tracking-tight">SisGesDoc</span>
+    </div>
+
+    <div class="relative z-10 max-w-md fade-up">
+      <p
+        class="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-white/70 ring-1 ring-white/15"
+      >
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+        Plataforma documental
+      </p>
+      <h1 class="text-5xl font-black leading-[1.05] tracking-tight">
+        Tus documentos,<br />
+        <span class="bg-gradient-to-r from-pink-300 to-fuchsia-400 bg-clip-text text-transparent"
+          >organizados y seguros.</span
+        >
+      </h1>
+      <p class="mt-5 text-base leading-relaxed text-white/60">
+        Centraliza archivos, carpetas y permisos de tu organización en un solo
+        lugar. Comparte con control y mantén un historial de cada operación.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        <span class="badge border-white/15 bg-white/10 text-white/80">Carpetas</span>
+        <span class="badge border-white/15 bg-white/10 text-white/80">Archivos</span>
+        <span class="badge border-white/15 bg-white/10 text-white/80">Permisos</span>
+        <span class="badge border-white/15 bg-white/10 text-white/80">Reportes</span>
+      </div>
+    </div>
+
+    <p class="relative z-10 font-mono text-xs text-white/35">
+      Sistema de Gestión Documental · 2026
+    </p>
+  </aside>
+
+  <!-- Formulario -->
+  <section class="relative flex items-center justify-center px-6 py-12 sm:px-12">
+    <button
+      type="button"
+      class="btn btn-ghost btn-circle absolute right-4 top-4 text-base-content/60 hover:text-base-content"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'"
+      [title]="themeService.theme() === 'dark' ? 'Modo claro' : 'Modo oscuro'"
+    >
+      @if (themeService.theme() === 'dark') {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.42 1.42" />
+        </svg>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      }
+    </button>
+
+    <div class="w-full max-w-sm fade-up">
+      <div class="mb-8 flex items-center gap-3 lg:hidden">
+        <span
+          class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-pink-600 to-fuchsia-600 text-2xl text-white"
+          >⬡</span
+        >
+        <span class="text-lg font-bold tracking-tight">SisGesDoc</span>
+      </div>
+
+      <h2 class="text-3xl font-extrabold tracking-tight">Iniciar sesión</h2>
+      <p class="mt-1 text-sm text-base-content/60">
+        Bienvenido de nuevo, ingresa tus credenciales.
+      </p>
+
+      <form class="mt-8 flex flex-col gap-5" [formGroup]="form" (ngSubmit)="submit()">
+        <label class="flex w-full flex-col">
+          <span class="mb-2 font-semibold text-base-content/70">Usuario</span>
+          <input
+            type="text"
+            formControlName="username"
+            autocomplete="username"
+            placeholder="ej. admin"
+            class="input w-full bg-base-200/60 focus:border-primary focus:outline-none"
+            [class.input-error]="form.controls.username.touched && form.controls.username.invalid"
+          />
+          @if (form.controls.username.touched && form.controls.username.invalid) {
+            <span class="mt-1 text-xs text-error">El usuario es obligatorio</span>
+          }
+        </label>
+
+        <label class="flex w-full flex-col">
+          <span class="mb-2 font-semibold text-base-content/70">Contraseña</span>
+          <div class="relative">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="input w-full bg-base-200/60 pr-12 focus:border-primary focus:outline-none"
+              [class.input-error]="form.controls.password.touched && form.controls.password.invalid"
+            />
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm btn-square absolute right-1 top-1/2 -translate-y-1/2 text-base-content/50"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            >
+              @if (showPassword()) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                  <path d="m1 1 22 22" />
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <span class="mt-1 text-xs text-error">La contraseña es obligatoria</span>
+          }
+        </label>
+
+        @if (error()) {
+          <div role="alert" class="alert alert-error py-2 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn h-12 w-full border-0 bg-gradient-to-r from-pink-600 to-fuchsia-600 text-white shadow-lg shadow-fuchsia-600/20 hover:from-pink-500 hover:to-fuchsia-500"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Ingresando...
+          } @else {
+            Iniciar sesión
+          }
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-xs text-base-content/40">
+        Sistema de Gestión Documental · Acceso restringido
+      </p>
+    </div>
+  </section>
+</div>

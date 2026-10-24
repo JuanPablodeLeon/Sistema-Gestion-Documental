@@ -1,0 +1,147 @@
+<div>
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-widest text-fuchsia-600 dark:text-fuchsia-400">
+        Papelera
+      </p>
+      <h1 class="mt-1 text-3xl font-extrabold tracking-tight">Elementos eliminados</h1>
+      <p class="mt-1 text-sm text-base-content/60">
+        Restaura o elimina definitivamente los recursos que ya no necesitas.
+      </p>
+    </div>
+
+    @if (items().length > 0) {
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="btn btn-outline btn-sm"
+          (click)="toggleAll()"
+        >
+          {{ allSelected() ? 'Deseleccionar todo' : 'Seleccionar todo' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          [disabled]="busy() || selectedItems().length === 0"
+          (click)="restaurarSeleccionados()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+          Restaurar ({{ selectedItems().length }})
+        </button>
+        <button
+          type="button"
+          class="btn btn-error btn-sm"
+          [disabled]="busy() || selectedItems().length === 0"
+          (click)="eliminarSeleccionados()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          </svg>
+          Eliminar ({{ selectedItems().length }})
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center gap-3 py-24 text-base-content/60">
+      <span class="loading loading-spinner loading-lg text-fuchsia-500"></span>
+      <p class="text-sm">Cargando papelera...</p>
+    </div>
+  } @else if (error()) {
+    <div role="alert" class="alert alert-error">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn btn-sm" (click)="load()">Reintentar</button>
+    </div>
+  } @else if (items().length === 0) {
+    <div class="card border border-dashed border-base-300 bg-base-100">
+      <div class="card-body items-center py-20 text-center">
+        <span class="text-5xl">🗑️</span>
+        <h2 class="mt-2 text-lg font-bold">La papelera está vacía</h2>
+        <p class="max-w-sm text-sm text-base-content/60">
+          Cuando envíes archivos o carpetas a la papelera aparecerán aquí.
+        </p>
+      </div>
+    </div>
+  } @else {
+    <div class="card overflow-hidden border border-base-300 bg-base-100 shadow-sm">
+      <div class="flex items-center justify-between border-b border-base-300 bg-base-200/40 px-4 py-2.5">
+        <label class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-base-content/60">
+          <input
+            type="checkbox"
+            class="checkbox checkbox-sm"
+            [checked]="allSelected()"
+            (change)="toggleAll()"
+          />
+          {{ items().length }} elemento(s)
+        </label>
+        @if (selected().size > 0) {
+          <span class="badge badge-primary badge-sm">{{ selected().size }} seleccionado(s)</span>
+        }
+      </div>
+
+      <ul class="divide-y divide-base-200">
+        @for (item of items(); track item.key) {
+          <li
+            class="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-base-200/50"
+            (click)="toggle(item)"
+          >
+            <input
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              [checked]="selected().has(item.key)"
+              (click)="$event.stopPropagation()"
+              (change)="toggle(item)"
+            />
+
+            <span
+              [class]="
+                item.kind === 'carpeta'
+                  ? 'grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-amber-500/10 text-amber-500'
+                  : 'grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-indigo-500/10 text-indigo-500'
+              "
+            >
+              @if (item.kind === 'carpeta') {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.7-.9L9.6 3.9A2 2 0 0 0 7.9 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+                  <path d="M14 2v6h6" />
+                </svg>
+              }
+            </span>
+
+            <div class="min-w-0 flex-1">
+              <p class="truncate font-mono text-sm font-semibold">{{ item.name }}</p>
+              <p class="text-[11px] text-base-content/40">
+                {{ item.kind === 'carpeta' ? 'Carpeta' : 'Archivo' }}
+              </p>
+            </div>
+
+            @if (item.type) {
+              <span class="badge badge-ghost badge-sm shrink-0">.{{ item.type }}</span>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  @if (toast(); as t) {
+    <div class="fixed bottom-6 right-6 z-50 fade-up">
+      <div
+        role="status"
+        class="alert shadow-xl"
+        [class.alert-success]="t.type === 'success'"
+        [class.alert-error]="t.type === 'error'"
+      >
+        <span class="text-sm font-semibold">{{ t.message }}</span>
+      </div>
+    </div>
+  }
+</div>
