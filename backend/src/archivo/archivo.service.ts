@@ -138,19 +138,21 @@ export class ArchivoService {
     const nombre = createArchivoDto.name.trim();
     const tipo = this.resolverTipo(nombre, createArchivoDto.type);
 
-    const archivo = await this.archivoModel.create({
+    const contenido = createArchivoDto.content ?? "";
+      const archivo = await this.archivoModel.create({
       name: nombre,
       type: tipo,
       parentFolder: padre ? padre._id : null,
       ancestors: padre ? [...padre.ancestors, padre._id] : [],
-      size: Buffer.byteLength(createArchivoDto.content, 'utf8'),
+      size: Buffer.byteLength(contenido, 'utf8'),
       owner: new Types.ObjectId(userId),
-      content: createArchivoDto.content,
+      content: contenido,
       inTrash: false,
       isVisible: true,
       shareWith: [],
       comentarios: [],
     });
+
 
     if (padre)
       await this.carpetaService.recalcularTamanio([

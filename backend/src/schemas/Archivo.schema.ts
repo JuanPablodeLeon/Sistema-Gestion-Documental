@@ -51,7 +51,8 @@ export class Archivo {
   owner: Usuario | Types.ObjectId;
 
   @Prop({
-    required: true,
+    //required: true,
+    default: ''
   })
   content: string;
 

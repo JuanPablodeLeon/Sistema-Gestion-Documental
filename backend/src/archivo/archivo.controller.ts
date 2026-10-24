@@ -51,6 +51,7 @@ export class ArchivoController {
     @Body() createArchivoDto: CreateArchivoDto,
     @ActiveUser() user: UserActiveInterface,
   ) {
+    //console.log(createArchivoDto);
     return this.archivoService.create(createArchivoDto, user.sub);
   }
 
