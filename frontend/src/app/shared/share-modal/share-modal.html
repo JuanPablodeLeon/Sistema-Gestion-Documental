@@ -187,8 +187,8 @@
 
                 <select
                   class="select select-sm w-full sm:w-52"
-                  [value]="nivelActual(entry)"
-                  (change)="cambiarNivel(entry, $any($event.target).value)"
+                  [ngModel]="nivelActual(entry)"
+                  (ngModelChange)="cambiarNivel(entry, $event)"
                   aria-label="Nivel de permiso"
                 >
                   @for (opcion of niveles; track opcion.value) {

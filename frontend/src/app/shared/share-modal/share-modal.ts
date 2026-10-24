@@ -20,6 +20,7 @@ import {
   nivelDeEntrada,
   permisosDeNivel,
 } from '../../core/utils/permisos';
+import { FormsModule } from '@angular/forms';
 
 export type TipoRecursoCompartido = 'archivo' | 'carpeta';
 
@@ -27,6 +28,7 @@ export type TipoRecursoCompartido = 'archivo' | 'carpeta';
   selector: 'app-share-modal',
   standalone: true,
   templateUrl: './share-modal.html',
+  imports: [FormsModule]
 })
 export class ShareModal implements OnDestroy {
   private readonly archivoService = inject(ArchivoService);
